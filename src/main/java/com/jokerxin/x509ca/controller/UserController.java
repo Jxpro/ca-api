@@ -11,11 +11,11 @@ import java.util.Map;
 @CrossOrigin
 public class UserController {
 	@PostMapping("/user/register")
-	public Map<String, Object> register(@RequestBody Map<String, String> body, HttpServletResponse response) {
+	public Map<String, Object> register(@RequestParam String username,
+	                                    @RequestParam String password,
+	                                    @RequestParam String nickname,
+	                                    HttpServletResponse response) {
 		Map<String, Object> map = new HashMap<>();
-		String username = body.get("username");
-		String password = body.get("password");
-		String nickname = body.get("nickname");
 		map.put("code", 401);
 		// TODO: 判断用户名是否已存在，如果存在则返回错误信息，否则将用户信息存入数据库
 		if (!username.equals("admin")) {
@@ -28,10 +28,10 @@ public class UserController {
 	}
 
 	@PostMapping("/user/login")
-	public Map<String, Object> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
+	public Map<String, Object> login(@RequestParam String username,
+	                                 @RequestParam String password,
+	                                 HttpServletResponse response) {
 		Map<String, Object> map = new HashMap<>();
-		String username = body.get("username");
-		String password = body.get("password");
 		map.put("code", 401);
 		// TODO: 判断用户名和密码是否正确，如果正确则返回用户信息，否则返回错误信息
 		if (username.equals("admin") && password.equals(Hash.sha256("adminadmin"))) {
