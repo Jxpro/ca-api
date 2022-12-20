@@ -44,7 +44,7 @@ public class UserController {
 	}
 
 	@GetMapping("/user/info")
-	public Map<String, Object> userInfo(@RequestHeader(value = "Authorization", defaultValue = "") String token, HttpServletResponse response) {
+	public Map<String, Object> userInfo(@RequestHeader(value = "Authorization") String token, HttpServletResponse response) {
 		Map<String, Object> map = new HashMap<>();
 		// TODO: 判断token是否正确，如果正确则返回用户信息，否则返回错误信息
 		map.put("name", "admin");
