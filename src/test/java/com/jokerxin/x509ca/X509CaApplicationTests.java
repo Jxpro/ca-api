@@ -10,16 +10,16 @@ import java.sql.SQLException;
 
 @SpringBootTest
 class X509CaApplicationTests {
-	@Autowired
-	private DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-	@Test
-	void testHash() {
-		System.out.println(Hash.sha256("admin"));
-	}
+    @Test
+    void testHash() {
+        System.out.println(Hash.sha256("admin"));
+    }
 
-	@Test
-	void testDatabaseConnection() throws SQLException {
-		System.out.println(dataSource.getConnection());
-	}
+    @Test
+    void testDatabaseConnection() throws SQLException {
+        System.out.println(dataSource.getConnection());
+    }
 }
