@@ -1,7 +1,7 @@
 package com.jokerxin.x509ca;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.jokerxin.x509ca.bean.Demo;
+import com.jokerxin.x509ca.entity.Demo;
 import com.jokerxin.x509ca.service.DemoService;
 import com.jokerxin.x509ca.utils.HashUtil;
 import org.junit.jupiter.api.Test;

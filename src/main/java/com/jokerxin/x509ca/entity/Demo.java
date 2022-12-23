@@ -1,4 +1,4 @@
-package com.jokerxin.x509ca.bean;
+package com.jokerxin.x509ca.entity;
 
 import lombok.Data;
 
