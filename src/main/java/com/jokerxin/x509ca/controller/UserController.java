@@ -1,6 +1,6 @@
 package com.jokerxin.x509ca.controller;
 
-import com.jokerxin.x509ca.utils.Hash;
+import com.jokerxin.x509ca.utils.HashUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +34,7 @@ public class UserController {
         Map<String, Object> map = new HashMap<>();
         map.put("code", 401);
         // TODO: 判断用户名和密码是否正确，如果正确则返回用户信息，否则返回错误信息
-        if (username.equals("admin") && password.equals(Hash.sha256("adminadmin"))) {
+        if (username.equals("admin") && password.equals(HashUtil.sha256("adminadmin"))) {
             map.put("code", 200);
             map.put("name", "admin");
             response.setHeader("Authorization", "token");

@@ -3,7 +3,7 @@ package com.jokerxin.x509ca;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jokerxin.x509ca.bean.Demo;
 import com.jokerxin.x509ca.service.DemoService;
-import com.jokerxin.x509ca.utils.Hash;
+import com.jokerxin.x509ca.utils.HashUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +22,7 @@ class X509CaApplicationTests {
 
     @Test
     void testHash() {
-        System.out.println(Hash.sha256("admin"));
+        System.out.println(HashUtil.sha256("admin"));
     }
 
     @Test
@@ -38,7 +38,7 @@ class X509CaApplicationTests {
     }
 
     @Test
-    public void testSelectDemoPage(){
+    public void testSelectDemoPage() {
         System.out.println(("----- selectPage method test ------"));
         Page<Demo> demoUserPage = new Page<>(1, 2);
         Page<Demo> page = demoService.page(demoUserPage);
