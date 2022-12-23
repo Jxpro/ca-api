@@ -1,5 +1,9 @@
 package com.jokerxin.x509ca.service;
 
-public interface UserService {
+import com.jokerxin.x509ca.entity.User;
 
+public interface UserService {
+    int saveUser(User user);
+
+    boolean existUser(String username);
 }
