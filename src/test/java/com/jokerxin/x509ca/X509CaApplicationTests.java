@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jokerxin.x509ca.entity.Demo;
 import com.jokerxin.x509ca.service.DemoService;
 import com.jokerxin.x509ca.utils.HashUtil;
+import com.jokerxin.x509ca.utils.JWTUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,5 +47,13 @@ class X509CaApplicationTests {
         System.out.println(page.getTotal());
         System.out.println(page.getCurrent());
         page.getRecords().forEach(System.out::println);
+    }
+
+    @Test
+    public void testToken(){
+        String token = JWTUtil.createToken(1, "admin");
+        int id = JWTUtil.getUserId(token);
+        System.out.println(token);
+        System.out.println(id);
     }
 }
