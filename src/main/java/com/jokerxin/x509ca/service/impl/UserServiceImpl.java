@@ -18,11 +18,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existUser(String username) {
+    public User getByUsername(String username) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         // 使用 LambdaQueryWrapper 可以避免 wrapper.eq("username", username) 中的username写错
         // last("limit 1") 仅查询一条数据，提高效率
         wrapper.eq(User::getUsername, username).last("limit 1");
-        return userMapper.exists(wrapper);
+        return userMapper.selectOne(wrapper);
     }
 }

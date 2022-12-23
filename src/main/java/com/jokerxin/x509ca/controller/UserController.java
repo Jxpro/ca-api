@@ -23,7 +23,7 @@ public class UserController {
         // 401 这里代表用户已经存在
         map.put("code", 401);
         // 判断用户名是否已存在，如果存在则返回错误信息，否则将用户信息存入数据库
-        if (!userService.existUser(user.getUsername())) {
+        if (userService.getByUsername(user.getUsername()) != null) {
             user.setPassword(HashUtil.sha256(user.getPassword()));
             userService.saveUser(user);
             map.put("code", 200);
@@ -40,12 +40,15 @@ public class UserController {
                                      @RequestParam String password,
                                      HttpServletResponse response) {
         Map<String, Object> map = new HashMap<>();
+        // 401 这里代表用户名或密码错误
         map.put("code", 401);
-        // TODO: 判断用户名和密码是否正确，如果正确则返回用户信息，否则返回错误信息
-        if (username.equals("admin") && password.equals(HashUtil.sha256("adminadmin"))) {
+        // 获取用户信息
+        User user = userService.getByUsername(username);
+        if (HashUtil.sha256(password).equals(user.getPassword())) {
             map.put("code", 200);
-            map.put("name", "admin");
-            response.setHeader("Authorization", "token");
+            map.put("name", username);
+            map.put("role", user.getAuthority() == 1 ? "admin" : "user");
+            response.setHeader("Authorization", JWTUtil.createToken(user.getId(), username));
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
         }
         return map;
