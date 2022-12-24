@@ -27,7 +27,7 @@ public class UserController {
         // 401 这里代表用户已经存在
         map.put("code", 401);
         // 判断用户名是否已存在，如果存在则返回错误信息，否则将用户信息存入数据库
-        if (userService.getByUsername(user.getUsername()) != null) {
+        if (userService.getByUsername(user.getUsername()) == null) {
             user.setPassword(HashUtil.sha256(user.getPassword()));
             userService.saveUser(user);
             map.put("code", 200);
