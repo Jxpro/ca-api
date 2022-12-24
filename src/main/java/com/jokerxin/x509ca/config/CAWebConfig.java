@@ -10,7 +10,6 @@ public class CAWebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginInterceptor())
-                .addPathPatterns("/**")
-                .excludePathPatterns("/user/login", "/user/register");
+                .addPathPatterns("/**");
     }
 }

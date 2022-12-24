@@ -1,5 +1,6 @@
 package com.jokerxin.x509ca.controller;
 
+import com.jokerxin.x509ca.annotation.PassLogin;
 import com.jokerxin.x509ca.entity.User;
 import com.jokerxin.x509ca.service.UserService;
 import com.jokerxin.x509ca.utils.HashUtil;
@@ -17,6 +18,7 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @PassLogin
     @PostMapping("/user/register")
     public Map<String, Object> register(User user, HttpServletResponse response) {
         Map<String, Object> map = new HashMap<>();
@@ -35,6 +37,7 @@ public class UserController {
         return map;
     }
 
+    @PassLogin
     @PostMapping("/user/login")
     public Map<String, Object> login(@RequestParam String username,
                                      @RequestParam String password,
