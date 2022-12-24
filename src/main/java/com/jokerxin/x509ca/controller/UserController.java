@@ -5,7 +5,6 @@ import com.jokerxin.x509ca.entity.User;
 import com.jokerxin.x509ca.service.UserService;
 import com.jokerxin.x509ca.utils.HashUtil;
 import com.jokerxin.x509ca.utils.JWTUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -15,8 +14,11 @@ import java.util.Map;
 @RestController
 @CrossOrigin
 public class UserController {
-    @Autowired
-    UserService userService;
+    final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PassLogin
     @PostMapping("/user/register")
