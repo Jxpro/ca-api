@@ -58,12 +58,11 @@ public class UserController {
     }
 
     @GetMapping("/user/info")
-    public Map<String, Object> userInfo(@RequestHeader(value = "Authorization") String token,
-                                        HttpServletResponse response) {
+    public Map<String, Object> userInfo(@RequestAttribute int userId) {
         Map<String, Object> map = new HashMap<>();
-        // TODO: 判断token是否正确，如果正确则返回用户信息，否则返回错误信息
-        map.put("name", "admin");
-        map.put("role", "admin");
+        User user = userService.getById(userId);
+        map.put("name", user.getUsername());
+        map.put("role", user.getAuthority() == 1 ? "admin" : "user");
         return map;
     }
 }

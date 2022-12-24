@@ -25,4 +25,9 @@ public class UserServiceImpl implements UserService {
         wrapper.eq(User::getUsername, username).last("limit 1");
         return userMapper.selectOne(wrapper);
     }
+
+    @Override
+    public User getById(int userId) {
+        return userMapper.selectById(userId);
+    }
 }

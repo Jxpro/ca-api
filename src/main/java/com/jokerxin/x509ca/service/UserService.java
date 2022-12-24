@@ -6,4 +6,6 @@ public interface UserService {
     int saveUser(User user);
 
     User getByUsername(String username);
+
+    User getById(int userId);
 }
