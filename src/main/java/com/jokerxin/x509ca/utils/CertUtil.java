@@ -258,4 +258,11 @@ public class CertUtil {
         fileOutputStream.write(encodedFile);
         fileOutputStream.close();
     }
+
+    /**
+     * 判断根CA证书和私钥是否存在
+     */
+    public static boolean isRootExist() {
+        return Files.exists(Paths.get("root.crt")) && Files.exists(Paths.get("root.privateKey"));
+    }
 }
