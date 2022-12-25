@@ -9,18 +9,17 @@ import java.security.SecureRandom;
 import java.util.Date;
 
 public class JWTUtil {
-    //签名秘钥，使用HmacSHA256算法
+    // 密钥种子，用于生成固定的密钥
+    private static final String seed = "jwt12138";
+    // 签名秘钥，使用HmacSHA256算法
     private static final SecretKey secretKey;
-    //过期时间，单位毫秒
+    // 过期时间，单位毫秒
     private static final long oneDay = 24 * 60 * 60 * 1000;
 
     static {
         try {
-            // 秘钥种子
-            int seed = 12138;
             KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-            // 使用固定种子，使每次生成的秘钥相同
-            keyGenerator.init(256, new SecureRandom(new byte[seed]));
+            keyGenerator.init(256, new SecureRandom(seed.getBytes()));
             secretKey = keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
