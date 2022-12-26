@@ -32,7 +32,7 @@ public class UserController {
             userService.saveUser(user);
             map.put("code", 200);
             map.put("name", user.getNickname());
-            map.put("role", user.getAuthority() == 1 ? "admin" : "user");
+            map.put("role", user.getRole());
             response.setHeader("Authorization", JWTUtil.createToken(user.getId(), user.getUsername()));
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
         }
@@ -52,7 +52,7 @@ public class UserController {
         if (HashUtil.sha256(password).equals(user.getPassword())) {
             map.put("code", 200);
             map.put("name", username);
-            map.put("role", user.getAuthority() == 1 ? "admin" : "user");
+            map.put("role", user.getRole());
             response.setHeader("Authorization", JWTUtil.createToken(user.getId(), username));
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
         }
@@ -64,7 +64,7 @@ public class UserController {
         Map<String, Object> map = new HashMap<>();
         User user = userService.getById(userId);
         map.put("name", user.getUsername());
-        map.put("role", user.getAuthority() == 1 ? "admin" : "user");
+        map.put("role", user.getRole());
         return map;
     }
 }

@@ -28,12 +28,12 @@ public class JWTUtil {
 
     // 生成token
     // 根据用户id和用户名生成token
-    public static String createToken(int userId, String userName) {
+    public static String createToken(int userId, String role) {
         return Jwts.builder()
                 .setSubject("CA-USER")
                 .setExpiration(new Date(System.currentTimeMillis() + oneDay))
-                .claim("uid", userId)
-                .claim("usr", userName)
+                .claim("user", userId)
+                .claim("role", role)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -48,10 +48,27 @@ public class JWTUtil {
                     .build()
                     .parseClaimsJws(token)
                     .getBody()
-                    .get("uid", Integer.class);
+                    .get("user", Integer.class);
         } catch (JwtException e) {
             id = -1;
         }
         return id;
+    }
+
+    // 解析token
+    // 返回用户role,如果token无效或过期，返回"error"
+    public static String getUserRole(String token) {
+        String role;
+        try {
+            role = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("role", String.class);
+        } catch (JwtException e) {
+            role = "error";
+        }
+        return role;
     }
 }

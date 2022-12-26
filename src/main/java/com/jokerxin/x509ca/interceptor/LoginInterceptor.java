@@ -25,7 +25,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         // 如果标注了 PassLogin 注解，则不需要登录
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         Method method = handlerMethod.getMethod();
-        if(method.isAnnotationPresent(PassLogin.class)) {
+        if (method.isAnnotationPresent(PassLogin.class)) {
             return true;
         }
 
@@ -46,13 +46,15 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         // 验证 token
         int id = JWTUtil.getUserId(token);
+        String role = JWTUtil.getUserRole(token);
         // 如果验证失败，则视为token失效，返回 403
-        if (id == -1) {
+        if (id == -1 || role.equals("error")) {
             response.setStatus(403);
             return false;
         }
-        // 验证成功，将用户id存入request中
+        // 验证成功，将用户id和role存入request中
         request.setAttribute("userId", id);
+        request.setAttribute("userRole", role);
         return true;
     }
 }
