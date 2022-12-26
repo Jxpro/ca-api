@@ -31,10 +31,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CertUtil {
     private static final int ROOT_SIZE = 2048;
@@ -83,7 +80,7 @@ public class CertUtil {
         X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                 new X500Principal(ROOT_DN),
                 BigInteger.ONE,
-                new Timestamp(System.currentTimeMillis()),
+                NotBefore,
                 NotAfter,
                 new X500Principal(ROOT_DN),
                 keyPair.getPublic())
@@ -144,12 +141,16 @@ public class CertUtil {
                 ",OU=" + subject.getOrganizationalUnit() +
                 ",C=" + subject.getCountryName() +
                 ",ST=" + subject.getProvinceName();
-        GeneralName[] subjectAlternativeNames = new GeneralName[]{
-                new GeneralName(GeneralName.rfc822Name, subject.getEmail()),
-                new GeneralName(GeneralName.uniformResourceIdentifier, license.getLicenseUrl())
-        };
+
+        List<GeneralName> subjectAlternativeNames = new ArrayList<>();
+        String licenseUrl = license.getLicenseUrl();
+        subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
+        if ( licenseUrl!= null) {
+            subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier,licenseUrl));
+        }
+
         map.put("DNString", new X500Principal(DNString));
-        map.put("subjectAlternativeNames", new GeneralNames(subjectAlternativeNames));
+        map.put("subjectAlternativeNames", new GeneralNames(subjectAlternativeNames.toArray(new GeneralName[0])));
         return map;
     }
 
@@ -160,15 +161,19 @@ public class CertUtil {
      * @param publicKey 用户自定义公钥
      * @return X509Certificate证书
      */
-    public static X509Certificate generateUserCert(Map<String, Object> subjectDN, PublicKey publicKey) throws Exception {
+    public static X509Certificate generateUserCert(Map<String, Object> subjectDN,
+                                                   BigInteger serialNumber,
+                                                   Date notBefore,
+                                                   Date notAfter,
+                                                   PublicKey publicKey) throws Exception {
         // 读取CA私钥
         PrivateKey privateKey = readPrivateKey(ROOT_PRIVATE_KEY, ROOT_ALG);
         // 证书构造器
         X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                 new X500Principal(ROOT_DN),
-                BigInteger.valueOf(System.currentTimeMillis()),
-                NotBefore,
-                NotAfter,
+                serialNumber,
+                notBefore,
+                notAfter,
                 (X500Principal) subjectDN.get("DNString"),
                 publicKey)
                 .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature))

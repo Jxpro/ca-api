@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -99,14 +101,22 @@ class X509CaApplicationTests {
         System.out.println("ecPublicKey: " + ecPublicKey);
 
         // 生成用户证书
-        X509Certificate rsaUserCert = CertUtil.generateUserCert(subjectDN, rsaPublicKey);
-        X509Certificate ecUserCert = CertUtil.generateUserCert(subjectDN, ecPublicKey);
+        X509Certificate rsaUserCert = CertUtil.generateUserCert(subjectDN,
+                BigInteger.valueOf(System.currentTimeMillis()),
+                new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24),
+                new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365),
+                rsaPublicKey);
+        X509Certificate ecUserCert = CertUtil.generateUserCert(subjectDN,
+                BigInteger.valueOf(System.currentTimeMillis()),
+                new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24),
+                new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365),
+                ecPublicKey);
         // 保存用户证书
         CertUtil.saveEncodedFile("user_rsa.pem", CertUtil.X509CertificateToPem(rsaUserCert).getBytes());
         CertUtil.saveEncodedFile("user_ec.crt", ecUserCert.getEncoded());
 
         // 读取证书并输出
-        System.out.println("root.crt: " +  CertUtil.readCert("root.crt"));
+        System.out.println("root.crt: " + CertUtil.readCert("root.crt"));
         System.out.println("user_rsa.pem: " + CertUtil.readCert("user_rsa.pem"));
         System.out.println("user_ec.crt: " + CertUtil.readCert("user_ec.crt"));
     }
