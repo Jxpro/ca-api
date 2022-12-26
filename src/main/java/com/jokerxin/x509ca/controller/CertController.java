@@ -43,6 +43,11 @@ public class CertController {
         return certService.getPageByState(number, "待审核");
     }
 
+    @GetMapping("/cert/user/{number}")
+    public List<Map<String, Object>> userCert(@PathVariable long number, @RequestAttribute int userId) {
+        return certService.getPageByUserId(number, userId);
+    }
+
     @PostMapping("/cert/approve")
     public List<Map<String, Object>> approve(@RequestParam int id,
                                              @RequestParam boolean passed,
@@ -53,11 +58,6 @@ public class CertController {
             return null;
         }
         return certService.approveCert(id, passed);
-    }
-
-    @GetMapping("/cert/user/{number}")
-    public List<Map<String, Object>> userCert(@PathVariable long number, @RequestAttribute int userId) {
-        return certService.getPageByUserId(number, userId);
     }
 
     @PostMapping("/cert/apply/subject")
