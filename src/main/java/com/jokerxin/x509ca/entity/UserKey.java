@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
-public class PublicKey {
+public class UserKey {
     @TableId(type = IdType.AUTO)
     private Integer id;
     // ECC 或 RSA

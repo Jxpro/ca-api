@@ -143,10 +143,10 @@ public class CertUtil {
                 ",ST=" + subject.getProvinceName();
 
         List<GeneralName> subjectAlternativeNames = new ArrayList<>();
-        String licenseUrl = license.getLicenseUrl();
+        String licenseUrl = "https://www.jokerxin.com/license/" + license.getContentHash();
         subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
-        if ( licenseUrl!= null) {
-            subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier,licenseUrl));
+        if (licenseUrl != null) {
+            subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier, licenseUrl));
         }
 
         map.put("DNString", new X500Principal(DNString));
