@@ -1,7 +1,7 @@
 package com.jokerxin.x509ca.controller;
 
 import com.jokerxin.x509ca.annotation.PassLogin;
-import com.jokerxin.x509ca.entity.PublicKey;
+import com.jokerxin.x509ca.entity.UserKey;
 import com.jokerxin.x509ca.entity.Subject;
 import com.jokerxin.x509ca.service.CertService;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +71,13 @@ public class CertController {
     }
 
     @PostMapping("/cert/apply/publicKey")
-    public Map<String, Object> applyPublicKey(PublicKey publicKey, @RequestAttribute int userId) {
-        return certService.insertPublicKey(publicKey, userId);
+    public Map<String, Object> applyPublicKey(UserKey userKey, @RequestAttribute int userId) {
+        return certService.insertPublicKey(userKey, userId);
+    }
+
+    @PostMapping("/cert/revoke")
+    public Map<String, Object> revokeCert(@RequestParam int requestId,
+                                          @RequestAttribute int userId) {
+        return certService.revokeById(requestId, userId);
     }
 }

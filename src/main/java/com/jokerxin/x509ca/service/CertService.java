@@ -1,7 +1,7 @@
 package com.jokerxin.x509ca.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.jokerxin.x509ca.entity.PublicKey;
+import com.jokerxin.x509ca.entity.UserKey;
 import com.jokerxin.x509ca.entity.Request;
 import com.jokerxin.x509ca.entity.Subject;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +21,9 @@ public interface CertService {
 
     Map<String, Object> insertLicense(MultipartFile file, int userId) throws IOException;
 
-    Map<String, Object> insertPublicKey(PublicKey publicKey, int userId);
+    Map<String, Object> insertPublicKey(UserKey userKey, int userId);
 
     List<Map<String, Object>> approveCert(int id, boolean passed);
+
+    Map<String, Object> revokeById(int requestId, int userId);
 }

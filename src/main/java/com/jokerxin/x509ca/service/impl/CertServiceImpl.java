@@ -3,9 +3,9 @@ package com.jokerxin.x509ca.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jokerxin.x509ca.entity.License;
-import com.jokerxin.x509ca.entity.PublicKey;
 import com.jokerxin.x509ca.entity.Request;
 import com.jokerxin.x509ca.entity.Subject;
+import com.jokerxin.x509ca.entity.UserKey;
 import com.jokerxin.x509ca.mapper.*;
 import com.jokerxin.x509ca.service.CertService;
 import com.jokerxin.x509ca.utils.CertUtil;
@@ -16,11 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -29,14 +31,14 @@ public class CertServiceImpl implements CertService {
     final RequestMapper requestMapper;
     final SubjectMapper subjectMapper;
     final LicenseMapper licenseMapper;
-    final PublicKeyMapper publicKeyMapper;
+    final UserKeyMapper userKeyMapper;
     final UserMapper userMapper;
 
-    public CertServiceImpl(RequestMapper requestMapper, SubjectMapper subjectMapper, LicenseMapper licenseMapper, PublicKeyMapper publicKeyMapper, UserMapper userMapper) {
+    public CertServiceImpl(RequestMapper requestMapper, SubjectMapper subjectMapper, LicenseMapper licenseMapper, UserKeyMapper userKeyMapper, UserMapper userMapper) {
         this.requestMapper = requestMapper;
         this.subjectMapper = subjectMapper;
         this.licenseMapper = licenseMapper;
-        this.publicKeyMapper = publicKeyMapper;
+        this.userKeyMapper = userKeyMapper;
         this.userMapper = userMapper;
     }
 
@@ -58,7 +60,7 @@ public class CertServiceImpl implements CertService {
             map.put("request", request);
             map.put("subject", subjectMapper.selectById(request.getSubjectId()));
             map.put("license", licenseMapper.selectById(request.getLicenseId()));
-            map.put("key", publicKeyMapper.selectById(request.getKeyId()));
+            map.put("key", userKeyMapper.selectById(request.getKeyId()));
             list.add(map);
         });
         return list;
@@ -136,22 +138,36 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public Map<String, Object> insertPublicKey(PublicKey publicKey, int userId) {
+    public Map<String, Object> insertPublicKey(UserKey userKey, int userId) {
         // 查询申请信息（此处是第三步，所以一定存在）
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
         wrapper.eq(Request::getState, "待完善");
         Request request = requestMapper.selectOne(wrapper);
         // 插入公钥
-        publicKeyMapper.insert(publicKey);
+        userKeyMapper.insert(userKey);
         // 更新申请记录
-        request.setKeyId(publicKey.getId());
+        request.setKeyId(userKey.getId());
         request.setState("待审核");
         requestMapper.updateById(request);
         // 返回申请记录
         Map<String, Object> map = new HashMap<>();
         map.put("request", request);
-        map.put("key", publicKey);
+        map.put("key", userKey);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> revokeById(int requestId, int userId) {
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getId, requestId);
+        wrapper.eq(Request::getUserId, userId);
+        Request request = requestMapper.selectOne(wrapper);
+        request.setState("已撤销");
+        request.setRevokeTime(new Date(System.currentTimeMillis()));
+        requestMapper.updateById(request);
+        Map<String, Object> map = new HashMap<>();
+        map.put("request", request);
         return map;
     }
 
@@ -160,7 +176,14 @@ public class CertServiceImpl implements CertService {
         // 查询申请信息
         Request request = requestMapper.selectById(id);
         // 更新申请信息
-        request.setState(passed ? "已通过" : "未通过");
+        if (passed) {
+            request.setState("已通过");
+            request.setSerialNumber(System.currentTimeMillis());
+            request.setNotBefore(new Date(System.currentTimeMillis()));
+            request.setNotAfter(new Date(System.currentTimeMillis() + 365L * 24 * 60 * 60 * 1000));
+        } else {
+            request.setState("未通过");
+        }
         requestMapper.updateById(request);
         // 返回申请记录
         return getPageByState(1, "待审核");
