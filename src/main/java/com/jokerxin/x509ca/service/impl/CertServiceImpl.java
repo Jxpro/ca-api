@@ -2,14 +2,21 @@ package com.jokerxin.x509ca.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.jokerxin.x509ca.entity.License;
+import com.jokerxin.x509ca.entity.PublicKey;
 import com.jokerxin.x509ca.entity.Request;
+import com.jokerxin.x509ca.entity.Subject;
 import com.jokerxin.x509ca.mapper.*;
 import com.jokerxin.x509ca.service.CertService;
 import com.jokerxin.x509ca.utils.CertUtil;
+import com.jokerxin.x509ca.utils.HashUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,5 +75,94 @@ public class CertServiceImpl implements CertService {
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
         return page(number, wrapper);
+    }
+
+    @Override
+    public Map<String, Object> insertSubject(Subject subject, int userId) {
+        // 查询申请是否存在
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 如果是第一次申请，则创建新的申请
+        if (request == null) {
+            request = new Request();
+            request.setUserId(userId);
+            request.setState("待完善");
+            requestMapper.insert(request);
+        }
+        // 如果已经有申请记录，则删除已有主体信息，插入新的主体信息
+        if (request.getSubjectId() != null) {
+            subjectMapper.deleteById(request.getSubjectId());
+        }
+        // 插入主体信息
+        subjectMapper.insert(subject);
+        // 更新申请记录
+        request.setSubjectId(subject.getId());
+        requestMapper.updateById(request);
+        // 返回申请记录
+        Map<String, Object> map = new HashMap<>();
+        map.put("request", request);
+        map.put("subject", subject);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> insertLicense(MultipartFile file, int userId) throws IOException {
+        // 查询申请信息（此处是第二步，所以一定存在）
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 如果已有许可证，则删除已有许可证
+        if (request.getLicenseId() != null) {
+            licenseMapper.deleteById(request.getLicenseId());
+        }
+        // 插入许可证
+        License license = new License();
+        license.setContentHash(HashUtil.sha256(file.getBytes()));
+        license.setOriginName(file.getOriginalFilename());
+        licenseMapper.insert(license);
+        // 保存许可证文件
+        file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
+        // 更新申请记录
+        request.setLicenseId(license.getId());
+        requestMapper.updateById(request);
+        // 返回申请记录
+        Map<String, Object> map = new HashMap<>();
+        map.put("request", request);
+        map.put("license", license);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> insertPublicKey(PublicKey publicKey, int userId) {
+        // 查询申请信息（此处是第三步，所以一定存在）
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 插入公钥
+        publicKeyMapper.insert(publicKey);
+        // 更新申请记录
+        request.setKeyId(publicKey.getId());
+        request.setState("待审核");
+        requestMapper.updateById(request);
+        // 返回申请记录
+        Map<String, Object> map = new HashMap<>();
+        map.put("request", request);
+        map.put("key", publicKey);
+        return map;
+    }
+
+    @Override
+    public List<Map<String, Object>> approveCert(int id, boolean passed) {
+        // 查询申请信息
+        Request request = requestMapper.selectById(id);
+        // 更新申请信息
+        request.setState(passed ? "已通过" : "未通过");
+        requestMapper.updateById(request);
+        // 返回申请记录
+        return getPageByState(1, "待审核");
     }
 }
