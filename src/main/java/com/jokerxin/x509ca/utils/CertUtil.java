@@ -40,6 +40,8 @@ public class CertUtil {
     private static final int ROOT_SIZE = 2048;
     private static final String ROOT_SEED = "root12138";
     private static final String ROOT_ALG = "RSA";
+    private static final String ROOT_CRT_PATH = "root.crt";
+    private static final String ROOT_PRIVATE_KEY = "root.privateKey";
     private static final String SIG_ALG = "SHA256withRSA";
     private static final String PROVIDER = "BC";
 
@@ -76,7 +78,7 @@ public class CertUtil {
         // 生成RSA密钥对
         KeyPair keyPair = generateFixedKeyPair();
         // 保存私钥
-        saveEncodedFile("root.privateKey", keyPair.getPrivate().getEncoded());
+        saveEncodedFile(ROOT_PRIVATE_KEY, keyPair.getPrivate().getEncoded());
         // 证书构造器
         X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                 new X500Principal(ROOT_DN),
@@ -93,7 +95,7 @@ public class CertUtil {
         // 生成证书
         X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certGen.build(sigGen));
         // 保存证书
-        saveEncodedFile("root.crt", cert.getEncoded());
+        saveEncodedFile(ROOT_CRT_PATH, cert.getEncoded());
     }
 
     /**
@@ -160,7 +162,7 @@ public class CertUtil {
      */
     public static X509Certificate generateUserCert(Map<String, Object> subjectDN, PublicKey publicKey) throws Exception {
         // 读取CA私钥
-        PrivateKey privateKey = readPrivateKey("root.privateKey", ROOT_ALG);
+        PrivateKey privateKey = readPrivateKey(ROOT_PRIVATE_KEY, ROOT_ALG);
         // 证书构造器
         X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                 new X500Principal(ROOT_DN),
@@ -201,7 +203,7 @@ public class CertUtil {
      */
     public static X509CRL generateCRL(BigInteger[] serials) throws Exception {
         // 读取CA私钥
-        PrivateKey privateKey = readPrivateKey("root.privateKey", ROOT_ALG);
+        PrivateKey privateKey = readPrivateKey(ROOT_PRIVATE_KEY, ROOT_ALG);
         // 证书吊销列表构造器
         JcaX509v2CRLBuilder crlGen = new JcaX509v2CRLBuilder(new X500Principal(ROOT_DN), new Date());
         // 设置下次更新时间
@@ -263,6 +265,6 @@ public class CertUtil {
      * 判断根CA证书和私钥是否存在
      */
     public static boolean isRootExist() {
-        return Files.exists(Paths.get("root.crt")) && Files.exists(Paths.get("root.privateKey"));
+        return Files.exists(Paths.get(ROOT_CRT_PATH)) && Files.exists(Paths.get(ROOT_PRIVATE_KEY));
     }
 }
