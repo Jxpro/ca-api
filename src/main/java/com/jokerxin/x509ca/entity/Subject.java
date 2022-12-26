@@ -8,7 +8,6 @@ import lombok.Data;
 public class Subject {
     @TableId(type = IdType.AUTO)
     private Integer id;
-    private Integer requestID;
     private String commonName;
     private String organization;
     private String organizationalUnit;

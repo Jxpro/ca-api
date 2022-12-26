@@ -8,7 +8,6 @@ import lombok.Data;
 public class License {
     @TableId(type = IdType.AUTO)
     private Integer id;
-    private Integer requestID;
     private String licenseUrl;
     private String originName;
     private String contentHash;
