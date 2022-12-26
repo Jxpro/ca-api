@@ -13,5 +13,6 @@ public class Request {
     private Integer userId;
     private Date notBefore;
     private Date notAfter;
+    private Date revokeTime;
     private Integer state;
 }
