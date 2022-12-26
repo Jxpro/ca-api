@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @CrossOrigin
@@ -28,7 +29,7 @@ public class UserController {
         map.put("code", 401);
         // 判断用户名是否已存在，如果存在则返回错误信息，否则将用户信息存入数据库
         if (userService.getByUsername(user.getUsername()) == null) {
-            user.setPassword(HashUtil.sha256(user.getPassword()));
+            user.setPassword(HashUtil.sha256(user.getPassword().getBytes()));
             userService.saveUser(user);
             map.put("code", 200);
             map.put("name", user.getNickname());
@@ -49,7 +50,7 @@ public class UserController {
         map.put("code", 401);
         // 获取用户信息
         User user = userService.getByUsername(username);
-        if (HashUtil.sha256(password).equals(user.getPassword())) {
+        if (Objects.equals(HashUtil.sha256(password.getBytes()), user.getPassword())) {
             map.put("code", 200);
             map.put("name", username);
             map.put("role", user.getRole());

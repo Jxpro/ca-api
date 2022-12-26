@@ -33,7 +33,7 @@ class X509CaApplicationTests {
 
     @Test
     void testHash() {
-        System.out.println(HashUtil.sha256("admin"));
+        System.out.println(HashUtil.sha256("admin".getBytes()));
     }
 
     @Test
