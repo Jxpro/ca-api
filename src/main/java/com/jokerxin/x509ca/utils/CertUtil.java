@@ -145,9 +145,7 @@ public class CertUtil {
         List<GeneralName> subjectAlternativeNames = new ArrayList<>();
         String licenseUrl = "https://www.jokerxin.com/license/" + license.getContentHash();
         subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
-        if (licenseUrl != null) {
-            subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier, licenseUrl));
-        }
+        subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier, licenseUrl));
 
         map.put("DNString", new X500Principal(DNString));
         map.put("subjectAlternativeNames", new GeneralNames(subjectAlternativeNames.toArray(new GeneralName[0])));
@@ -206,7 +204,7 @@ public class CertUtil {
      * @param serials 吊销的证书序列号
      * @return X509CRL证书吊销列表
      */
-    public static X509CRL generateCRL(BigInteger[] serials) throws Exception {
+    public static X509CRL generateCRL(List<BigInteger> serials) throws Exception {
         // 读取CA私钥
         PrivateKey privateKey = readPrivateKey(ROOT_PRIVATE_KEY, ROOT_ALG);
         // 证书吊销列表构造器

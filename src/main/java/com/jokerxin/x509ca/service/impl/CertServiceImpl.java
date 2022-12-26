@@ -188,4 +188,66 @@ public class CertServiceImpl implements CertService {
         // 返回申请记录
         return getPageByState(1, "待审核");
     }
+
+    @Override
+    public byte[] getLicenseFile(String hash) {
+        try {
+            FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
+            byte[] license = new byte[fileInputStream.available()];
+            if (fileInputStream.read(license) == -1) {
+                throw new Exception("文件读取失败");
+            }
+            fileInputStream.close();
+            return license;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String getLicenseName(String hash) {
+        LambdaQueryWrapper<License> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(License::getContentHash, hash);
+        return licenseMapper.selectOne(wrapper).getOriginName();
+    }
+
+    @Override
+    public byte[] getCertification(int id) throws Exception {
+        Request request = requestMapper.selectById(id);
+        UserKey userKey = userKeyMapper.selectById(request.getKeyId());
+        Subject subject = subjectMapper.selectById(request.getSubjectId());
+        License license = licenseMapper.selectById(request.getLicenseId());
+        PublicKey publicKey;
+        if (userKey.getAlgorithm().equals("RSA")) {
+            publicKey = CertUtil.customRSAPublicKey(userKey.getParam1(), userKey.getParam2());
+        } else {
+            publicKey = CertUtil.customECPublicKey(userKey.getCurveName(), userKey.getParam1(), userKey.getParam2());
+        }
+        Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
+        X509Certificate x509Certificate = CertUtil.generateUserCert(subjectDN,
+                BigInteger.valueOf(request.getSerialNumber()),
+                request.getNotBefore(),
+                request.getNotAfter(),
+                publicKey);
+        return CertUtil.X509CertificateToPem(x509Certificate).getBytes();
+    }
+
+    @Override
+    public String getCommonName(int id) {
+        Request request = requestMapper.selectById(id);
+        return subjectMapper.selectById(request.getSubjectId()).getCommonName();
+    }
+
+    @Override
+    public byte[] getCRL() throws Exception {
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getState, "已撤销");
+        List<Request> requests = requestMapper.selectList(wrapper);
+        List<BigInteger> revokedSerialNumbers = new ArrayList<>();
+        for (Request request : requests) {
+            revokedSerialNumbers.add(BigInteger.valueOf(request.getSerialNumber()));
+        }
+        X509CRL x509CRL = CertUtil.generateCRL(revokedSerialNumbers);
+        return x509CRL.getEncoded();
+    }
 }

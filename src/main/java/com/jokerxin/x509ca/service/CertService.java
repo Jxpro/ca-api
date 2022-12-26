@@ -26,4 +26,14 @@ public interface CertService {
     List<Map<String, Object>> approveCert(int id, boolean passed);
 
     Map<String, Object> revokeById(int requestId, int userId);
+
+    byte[] getLicenseFile(String hash);
+
+    String getLicenseName(String hash);
+
+    byte[] getCertification(int id) throws Exception;
+
+    String getCommonName(int id);
+
+    byte[] getCRL() throws Exception;
 }

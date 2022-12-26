@@ -88,7 +88,6 @@ class X509CaApplicationTests {
         subject.setCountryName("CN");
         subject.setProvinceName("Hunan");
         subject.setEmail("jokerxin@jokerxin.com");
-        license.setLicenseUrl("https://www.jokerxin.com/license");
         Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
 
         // 生成根证书
