@@ -19,9 +19,9 @@ public interface CertService {
 
     List<Map<String, Object>> getAllByUserId(int userId);
 
-    public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper);
+    List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper);
 
-    public List<Map<String, Object>> getPageByState(long number, String stateMessage);
+    List<Map<String, Object>> getPageByState(long number, String stateMessage);
 
     List<Map<String, Object>> getPageByUserId(long number, int userId);
 

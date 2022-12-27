@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @CrossOrigin
 public class FileController {
-
     final CertService certService;
 
     public FileController(CertService certService) {
