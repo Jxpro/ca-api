@@ -35,13 +35,9 @@ public interface CertService {
 
     Map<String, Object> revokeById(int requestId, int userId);
 
-    byte[] getLicenseFile(String hash);
-
-    String getLicenseName(String hash);
+    byte[] getLicense(String hash);
 
     byte[] getCertification(int id) throws Exception;
-
-    String getCommonName(int id);
 
     byte[] getCRL() throws Exception;
 }

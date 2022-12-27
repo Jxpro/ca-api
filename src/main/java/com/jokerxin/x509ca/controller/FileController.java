@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Date;
 
 @Controller
 @CrossOrigin
@@ -24,10 +23,7 @@ public class FileController {
     @GetMapping("/file/license/{hash}")
     public void license(@PathVariable String hash,
                         HttpServletResponse response) {
-        byte[] file = certService.getLicenseFile(hash);
-        String name = certService.getLicenseName(hash);
-        response.setHeader("Content-Disposition", "attachment; filename=" + name);
-        response.setContentType("application/pdf");
+        byte[] file = certService.getLicense(hash);
         response.setContentLength(file.length);
         try {
             response.getOutputStream().write(file);
@@ -41,9 +37,6 @@ public class FileController {
     public void cert(@PathVariable int id,
                      HttpServletResponse response) throws Exception {
         byte[] file = certService.getCertification(id);
-        String name = certService.getCommonName(id) + ".cer";
-        response.setHeader("Content-Disposition", "attachment; filename=" + name);
-        response.setContentType("application/x-x509-user-cert");
         response.setContentLength(file.length);
         try {
             response.getOutputStream().write(file);
@@ -56,9 +49,6 @@ public class FileController {
     @GetMapping("file/crl")
     public void crl(HttpServletResponse response) throws Exception {
         byte[] file = certService.getCRL();
-        String name = new Date(System.currentTimeMillis()) + ".crl";
-        response.setHeader("Content-Disposition", "attachment; filename=" + name);
-        response.setContentType("application/pkix-crl");
         response.setContentLength(file.length);
         try {
             response.getOutputStream().write(file);

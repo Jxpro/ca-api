@@ -215,7 +215,7 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public byte[] getLicenseFile(String hash) {
+    public byte[] getLicense(String hash) {
         try {
             FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
             byte[] license = new byte[fileInputStream.available()];
@@ -227,13 +227,6 @@ public class CertServiceImpl implements CertService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String getLicenseName(String hash) {
-        LambdaQueryWrapper<License> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(License::getContentHash, hash);
-        return licenseMapper.selectOne(wrapper).getOriginName();
     }
 
     @Override
@@ -258,12 +251,6 @@ public class CertServiceImpl implements CertService {
                 request.getNotAfter(),
                 publicKey);
         return CertUtil.X509CertificateToPem(x509Certificate).getBytes();
-    }
-
-    @Override
-    public String getCommonName(int id) {
-        Request request = requestMapper.selectById(id);
-        return subjectMapper.selectById(request.getSubjectId()).getCommonName();
     }
 
     @Override
