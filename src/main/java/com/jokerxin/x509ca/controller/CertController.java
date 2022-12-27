@@ -21,6 +21,32 @@ public class CertController {
     }
 
     @PassLogin
+    @GetMapping("/cert/valid")
+    public List<Map<String, Object>> allValid() {
+        return certService.getAllByState("已通过");
+    }
+
+    @PassLogin
+    @GetMapping("/cert/revoke")
+    public List<Map<String, Object>> allRevoke() {
+        return certService.getAllByState("已撤销");
+    }
+
+    @GetMapping("/cert/unapproved")
+    public List<Map<String, Object>> allUnapproved(@RequestAttribute String userRole, HttpServletResponse response) {
+        if (!userRole.equals("admin")) {
+            response.setStatus(403);
+            return null;
+        }
+        return certService.getAllByState("待审核");
+    }
+
+    @GetMapping("/cert/user")
+    public List<Map<String, Object>> allUserCert(@RequestAttribute int userId) {
+        return certService.getAllByUserId(userId);
+    }
+
+    @PassLogin
     @GetMapping("/cert/valid/{number}")
     public List<Map<String, Object>> valid(@PathVariable long number) {
         return certService.getPageByState(number, "已通过");

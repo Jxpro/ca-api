@@ -11,6 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 public interface CertService {
+    List<Map<String, Object>> getCertsByRequests(List<Request> requests);
+
+    List<Map<String, Object>> getAll( LambdaQueryWrapper<Request> wrapper);
+
+    List<Map<String, Object>> getAllByState(String stateMessage);
+
+    List<Map<String, Object>> getAllByUserId(int userId);
+
     public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper);
 
     public List<Map<String, Object>> getPageByState(long number, String stateMessage);

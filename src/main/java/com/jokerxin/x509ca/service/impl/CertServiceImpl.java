@@ -51,11 +51,10 @@ public class CertServiceImpl implements CertService {
         log.info("Generate root CA");
     }
 
-    public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper) {
+    @Override
+    public List<Map<String, Object>> getCertsByRequests(List<Request> requests) {
         List<Map<String, Object>> list = new ArrayList<>();
-        Page<Request> page = new Page<>(number, PAGE_SIZE);
-        requestMapper.selectPage(page, wrapper);
-        page.getRecords().forEach(request -> {
+        requests.forEach(request -> {
             Map<String, Object> map = new HashMap<>();
             map.put("request", request);
             map.put("subject", subjectMapper.selectById(request.getSubjectId()));
@@ -64,6 +63,32 @@ public class CertServiceImpl implements CertService {
             list.add(map);
         });
         return list;
+    }
+
+    @Override
+    public List<Map<String, Object>> getAll(LambdaQueryWrapper<Request> wrapper) {
+        List<Request> requests = requestMapper.selectList(wrapper);
+        return getCertsByRequests(requests);
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllByState(String stateMessage) {
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getState, stateMessage);
+        return getAll(wrapper);
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllByUserId(int userId) {
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        return getAll(wrapper);
+    }
+
+    public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper) {
+        Page<Request> page = new Page<>(number, PAGE_SIZE);
+        requestMapper.selectPage(page, wrapper);
+        return getCertsByRequests(page.getRecords());
     }
 
     public List<Map<String, Object>> getPageByState(long number, String stateMessage) {
