@@ -216,7 +216,10 @@ public class CertServiceImpl implements CertService {
         Request request = requestMapper.selectById(id);
         UserKey userKey = userKeyMapper.selectById(request.getKeyId());
         Subject subject = subjectMapper.selectById(request.getSubjectId());
-        License license = licenseMapper.selectById(request.getLicenseId());
+        License license = null;
+        if (request.getLicenseId() != null) {
+            license = licenseMapper.selectById(request.getLicenseId());
+        }
         PublicKey publicKey;
         if (userKey.getAlgorithm().equals("RSA")) {
             publicKey = CertUtil.customRSAPublicKey(userKey.getParam1(), userKey.getParam2());
