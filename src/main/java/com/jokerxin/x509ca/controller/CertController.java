@@ -49,18 +49,18 @@ public class CertController {
 
     @PassLogin
     @GetMapping("/cert/valid/{number}")
-    public List<Map<String, Object>> valid(@PathVariable long number) {
+    public List<Map<String, Object>> validPage(@PathVariable long number) {
         return certService.getPageByState(number, "已通过");
     }
 
     @PassLogin
     @GetMapping("/cert/revoke/{number}")
-    public List<Map<String, Object>> revoke(@PathVariable long number) {
+    public List<Map<String, Object>> revokePage(@PathVariable long number) {
         return certService.getPageByState(number, "已撤销");
     }
 
     @GetMapping("/cert/unapproved/{number}")
-    public List<Map<String, Object>> unapproved(@PathVariable long number,
+    public List<Map<String, Object>> unapprovedPage(@PathVariable long number,
                                                 @RequestAttribute String userRole,
                                                 HttpServletResponse response) {
         if (!userRole.equals("admin")) {
@@ -71,7 +71,7 @@ public class CertController {
     }
 
     @GetMapping("/cert/user/{number}")
-    public List<Map<String, Object>> userCert(@PathVariable long number, @RequestAttribute int userId) {
+    public List<Map<String, Object>> userCertPage(@PathVariable long number, @RequestAttribute int userId) {
         return certService.getPageByUserId(number, userId);
     }
 
