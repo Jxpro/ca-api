@@ -27,7 +27,7 @@ import java.util.*;
 @Service
 @Slf4j
 public class CertServiceImpl implements CertService {
-    private static final long PAGE_SIZE = 6;
+    private static final long PAGE_SIZE = 3;
     final RequestMapper requestMapper;
     final SubjectMapper subjectMapper;
     final LicenseMapper licenseMapper;
@@ -85,12 +85,14 @@ public class CertServiceImpl implements CertService {
         return getAll(wrapper);
     }
 
+    @Override
     public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper) {
         Page<Request> page = new Page<>(number, PAGE_SIZE);
         requestMapper.selectPage(page, wrapper);
         return getCertsByRequests(page.getRecords());
     }
 
+    @Override
     public List<Map<String, Object>> getPageByState(long number, String stateMessage) {
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getState, stateMessage);
