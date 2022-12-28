@@ -20,11 +20,7 @@ public enum HttpEnum {
     /**
      * 表示用户得到授权，但是访问是被禁止的
      */
-    FORBIDDEN(403,"权限不足"),
-    /**
-     * 系统内部错误
-     */
-    INTERNAL_SERVER_ERROR(500, "系统内部错误");
+    FORBIDDEN(403,"权限不足");
 
     private final Integer code;
     private final String msg;
