@@ -24,13 +24,13 @@ public class CertController {
     @PassLogin
     @GetMapping("/cert/valid")
     public List<Map<String, Object>> allValid() {
-        return certService.getAllByState("已通过");
+        return certService.listByState("已通过");
     }
 
     @PassLogin
     @GetMapping("/cert/revoke")
     public List<Map<String, Object>> allRevoke() {
-        return certService.getAllByState("已撤销");
+        return certService.listByState("已撤销");
     }
 
     @GetMapping("/cert/unapproved")
@@ -39,44 +39,36 @@ public class CertController {
             response.setStatus(403);
             return null;
         }
-        return certService.getAllByState("待审核");
+        return certService.listByState("待审核");
     }
 
     @GetMapping("/cert/user")
     public List<Map<String, Object>> allUserCert(@RequestAttribute int userId) {
-        return certService.getAllByUserId(userId);
+        return certService.listByUserId(userId, false);
     }
 
-    @PassLogin
-    @GetMapping("/cert/valid/{number}")
-    public List<Map<String, Object>> validPage(@PathVariable long number) {
-        return certService.getPageByState(number, "已通过");
+    @GetMapping("/cert/user/uncompleted")
+    public List<Map<String, Object>> uncompletedUserCert(@RequestAttribute int userId) {
+        return certService.listByUserId(userId, true);
     }
 
-    @PassLogin
-    @GetMapping("/cert/revoke/{number}")
-    public List<Map<String, Object>> revokePage(@PathVariable long number) {
-        return certService.getPageByState(number, "已撤销");
+    @PostMapping("/cert/apply/subject")
+    public Map<String, Object> applySubject(Subject subject, @RequestAttribute int userId) {
+        return certService.saveSubject(subject, userId);
     }
 
-    @GetMapping("/cert/unapproved/{number}")
-    public List<Map<String, Object>> unapprovedPage(@PathVariable long number,
-                                                @RequestAttribute String userRole,
-                                                HttpServletResponse response) {
-        if (!userRole.equals("admin")) {
-            response.setStatus(403);
-            return null;
-        }
-        return certService.getPageByState(number, "待审核");
+    @PostMapping("/cert/apply/license")
+    public Map<String, Object> applyLicense(MultipartFile license, @RequestAttribute int userId) throws IOException {
+        return certService.saveLicense(license, userId);
     }
 
-    @GetMapping("/cert/user/{number}")
-    public List<Map<String, Object>> userCertPage(@PathVariable long number, @RequestAttribute int userId) {
-        return certService.getPageByUserId(number, userId);
+    @PostMapping("/cert/apply/publicKey")
+    public Map<String, Object> applyPublicKey(UserKey userKey, @RequestAttribute int userId) {
+        return certService.savePublicKey(userKey, userId);
     }
 
     @PostMapping("/cert/approve")
-    public List<Map<String, Object>> approve(@RequestParam int id,
+    public List<Map<String, Object>> approveCert(@RequestParam int id,
                                              @RequestParam boolean passed,
                                              @RequestAttribute String userRole,
                                              HttpServletResponse response) {
@@ -85,21 +77,6 @@ public class CertController {
             return null;
         }
         return certService.approveCert(id, passed);
-    }
-
-    @PostMapping("/cert/apply/subject")
-    public Map<String, Object> applySubject(Subject subject, @RequestAttribute int userId) {
-        return certService.insertSubject(subject, userId);
-    }
-
-    @PostMapping("/cert/apply/license")
-    public Map<String, Object> applyLicense(MultipartFile license, @RequestAttribute int userId) throws IOException {
-        return certService.insertLicense(license, userId);
-    }
-
-    @PostMapping("/cert/apply/publicKey")
-    public Map<String, Object> applyPublicKey(UserKey userKey, @RequestAttribute int userId) {
-        return certService.insertPublicKey(userKey, userId);
     }
 
     @PostMapping("/cert/revoke")

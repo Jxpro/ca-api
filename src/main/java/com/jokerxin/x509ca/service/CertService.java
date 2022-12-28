@@ -11,25 +11,17 @@ import java.util.List;
 import java.util.Map;
 
 public interface CertService {
-    List<Map<String, Object>> getCertsByRequests(List<Request> requests);
+    List<Map<String, Object>> list(LambdaQueryWrapper<Request> wrapper);
 
-    List<Map<String, Object>> getAll( LambdaQueryWrapper<Request> wrapper);
+    List<Map<String, Object>> listByState(String stateMessage);
 
-    List<Map<String, Object>> getAllByState(String stateMessage);
+    List<Map<String, Object>> listByUserId(int userId, boolean uncompleted);
 
-    List<Map<String, Object>> getAllByUserId(int userId);
+    Map<String, Object> saveSubject(Subject subject, int userId);
 
-    List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper);
+    Map<String, Object> saveLicense(MultipartFile file, int userId) throws IOException;
 
-    List<Map<String, Object>> getPageByState(long number, String stateMessage);
-
-    List<Map<String, Object>> getPageByUserId(long number, int userId);
-
-    Map<String, Object> insertSubject(Subject subject, int userId);
-
-    Map<String, Object> insertLicense(MultipartFile file, int userId) throws IOException;
-
-    Map<String, Object> insertPublicKey(UserKey userKey, int userId);
+    Map<String, Object> savePublicKey(UserKey userKey, int userId);
 
     List<Map<String, Object>> approveCert(int id, boolean passed);
 

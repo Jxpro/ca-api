@@ -1,7 +1,6 @@
 package com.jokerxin.x509ca.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jokerxin.x509ca.entity.License;
 import com.jokerxin.x509ca.entity.Request;
 import com.jokerxin.x509ca.entity.Subject;
@@ -27,7 +26,6 @@ import java.util.*;
 @Service
 @Slf4j
 public class CertServiceImpl implements CertService {
-    private static final long PAGE_SIZE = 3;
     final RequestMapper requestMapper;
     final SubjectMapper subjectMapper;
     final LicenseMapper licenseMapper;
@@ -52,8 +50,9 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public List<Map<String, Object>> getCertsByRequests(List<Request> requests) {
+    public List<Map<String, Object>> list(LambdaQueryWrapper<Request> wrapper) {
         List<Map<String, Object>> list = new ArrayList<>();
+        List<Request> requests = requestMapper.selectList(wrapper);
         requests.forEach(request -> {
             Map<String, Object> map = new HashMap<>();
             map.put("request", request);
@@ -66,48 +65,24 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public List<Map<String, Object>> getAll(LambdaQueryWrapper<Request> wrapper) {
-        List<Request> requests = requestMapper.selectList(wrapper);
-        return getCertsByRequests(requests);
-    }
-
-    @Override
-    public List<Map<String, Object>> getAllByState(String stateMessage) {
+    public List<Map<String, Object>> listByState(String stateMessage) {
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getState, stateMessage);
-        return getAll(wrapper);
+        return this.list(wrapper);
     }
 
     @Override
-    public List<Map<String, Object>> getAllByUserId(int userId) {
+    public List<Map<String, Object>> listByUserId(int userId, boolean uncompleted) {
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
-        return getAll(wrapper);
+        if (uncompleted) {
+            wrapper.eq(Request::getState, "待完善");
+        }
+        return this.list(wrapper);
     }
 
     @Override
-    public List<Map<String, Object>> page(long number, LambdaQueryWrapper<Request> wrapper) {
-        Page<Request> page = new Page<>(number, PAGE_SIZE);
-        requestMapper.selectPage(page, wrapper);
-        return getCertsByRequests(page.getRecords());
-    }
-
-    @Override
-    public List<Map<String, Object>> getPageByState(long number, String stateMessage) {
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getState, stateMessage);
-        return page(number, wrapper);
-    }
-
-    @Override
-    public List<Map<String, Object>> getPageByUserId(long number, int userId) {
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getUserId, userId);
-        return page(number, wrapper);
-    }
-
-    @Override
-    public Map<String, Object> insertSubject(Subject subject, int userId) {
+    public Map<String, Object> saveSubject(Subject subject, int userId) {
         // 查询申请是否存在
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
@@ -137,7 +112,7 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public Map<String, Object> insertLicense(MultipartFile file, int userId) throws IOException {
+    public Map<String, Object> saveLicense(MultipartFile file, int userId) throws IOException {
         // 查询申请信息（此处是第二步，所以一定存在）
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
@@ -165,7 +140,7 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public Map<String, Object> insertPublicKey(UserKey userKey, int userId) {
+    public Map<String, Object> savePublicKey(UserKey userKey, int userId) {
         // 查询申请信息（此处是第三步，所以一定存在）
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
@@ -212,8 +187,8 @@ public class CertServiceImpl implements CertService {
             request.setState("未通过");
         }
         requestMapper.updateById(request);
-        // 返回申请记录
-        return getPageByState(1, "待审核");
+        // 返回申请记录，方便重新渲染页面
+        return this.listByState("待审核");
     }
 
     @Override
@@ -244,7 +219,7 @@ public class CertServiceImpl implements CertService {
         if (userKey.getAlgorithm().equals("RSA-2048")) {
             publicKey = CertUtil.customRSAPublicKey(userKey.getParam1(), userKey.getParam2());
         } else {
-            publicKey = CertUtil.customECPublicKey(userKey.getAlgorithm().split("-")[1], userKey.getParam1(), userKey.getParam2());
+            publicKey = CertUtil.customECPublicKey("prime256v1", userKey.getParam1(), userKey.getParam2());
         }
         Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
         X509Certificate x509Certificate = CertUtil.generateUserCert(subjectDN,
