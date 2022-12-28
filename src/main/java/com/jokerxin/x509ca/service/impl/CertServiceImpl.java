@@ -241,10 +241,10 @@ public class CertServiceImpl implements CertService {
             license = licenseMapper.selectById(request.getLicenseId());
         }
         PublicKey publicKey;
-        if (userKey.getAlgorithm().equals("RSA")) {
+        if (userKey.getAlgorithm().equals("RSA-2048")) {
             publicKey = CertUtil.customRSAPublicKey(userKey.getParam1(), userKey.getParam2());
         } else {
-            publicKey = CertUtil.customECPublicKey(userKey.getCurveName(), userKey.getParam1(), userKey.getParam2());
+            publicKey = CertUtil.customECPublicKey(userKey.getAlgorithm().split("-")[1], userKey.getParam1(), userKey.getParam2());
         }
         Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
         X509Certificate x509Certificate = CertUtil.generateUserCert(subjectDN,

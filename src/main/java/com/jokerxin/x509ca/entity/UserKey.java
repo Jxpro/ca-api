@@ -8,12 +8,10 @@ import lombok.Data;
 public class UserKey {
     @TableId(type = IdType.AUTO)
     private Integer id;
-    // ECC 或 RSA
+    // RSA-2048 或 ECC-prime256v1
     private String algorithm;
-    // 暂限三选一：secp256k1，sm2p256v1，prime256v1
-    private String curveName;
-    // 2048 或 4096
-    private String keySize;
+    // 十六进制，n或x
     private String param1;
+    // 十六进制，e或y
     private String param2;
 }

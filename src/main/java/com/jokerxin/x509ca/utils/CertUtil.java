@@ -104,7 +104,7 @@ public class CertUtil {
      */
     public static PublicKey customRSAPublicKey(String n, String e) throws Exception {
         // 构造RSA公钥参数RSAPublicKeySpec
-        RSAPublicKeySpec spec = new RSAPublicKeySpec(new BigInteger(n), new BigInteger(e));
+        RSAPublicKeySpec spec = new RSAPublicKeySpec(new BigInteger(n, 16), new BigInteger(e, 16));
         // 使用RSAPublicKeySpec构造RSA公钥
         return KeyFactory.getInstance(ROOT_ALG, PROVIDER).generatePublic(spec);
     }
@@ -121,7 +121,7 @@ public class CertUtil {
         // 根据params构造ECPublicKeyParameters
         ECParameterSpec ecParameterSpec = ECNamedCurveTable.getParameterSpec(curve);
         // 根据x和y构造ECPoint
-        ECPoint ecPoint = ecParameterSpec.getCurve().createPoint(new BigInteger(x), new BigInteger(y));
+        ECPoint ecPoint = ecParameterSpec.getCurve().createPoint(new BigInteger(x, 16), new BigInteger(y, 16));
         // 根据ECPublicKeyParameters和ECPoint构造ECPublicKeySpec
         ECPublicKeySpec ecPublicKeySpec = new ECPublicKeySpec(ecPoint, ecParameterSpec);
         // 使用ECPublicKeySpec构造ECC公钥
