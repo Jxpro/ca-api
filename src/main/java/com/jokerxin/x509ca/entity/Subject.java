@@ -11,7 +11,7 @@ public class Subject {
     private String commonName;
     private String organization;
     private String organizationalUnit;
-    private String countryName;
-    private String provinceName;
+    private String country;
+    private String stateOrProvinceName;
     private String email;
 }

@@ -85,8 +85,8 @@ class X509CaApplicationTests {
         subject.setCommonName("jokerxin");
         subject.setOrganization("HNU");
         subject.setOrganizationalUnit("CS");
-        subject.setCountryName("CN");
-        subject.setProvinceName("Hunan");
+        subject.setCountry("CN");
+        subject.setStateOrProvinceName("Hunan");
         subject.setEmail("jokerxin@jokerxin.com");
         Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
 
