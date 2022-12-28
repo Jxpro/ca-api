@@ -1,7 +1,10 @@
 package com.jokerxin.x509ca.utils;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.jokerxin.x509ca.entity.License;
 import com.jokerxin.x509ca.entity.Subject;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -34,9 +37,9 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 
 public class CertUtil {
-    private static final int ROOT_SIZE = 2048;
     private static final String ROOT_SEED = "root12138";
     private static final String ROOT_ALG = "RSA";
+    private static final int ROOT_SIZE = 2048;
     private static final String ROOT_CRT_PATH = "root.crt";
     private static final String ROOT_PRIVATE_KEY = "root.privateKey";
     private static final String SIG_ALG = "SHA256withRSA";
@@ -69,7 +72,7 @@ public class CertUtil {
     }
 
     /**
-     * 使用JcaX509v3CertificateBuilder生成根CA数字证书
+     * 使用JcaX509v3CertificateBuilder生成根CA数字证书，并保存到文件
      */
     public static void generateRootCert() throws Exception {
         // 生成RSA密钥对
@@ -112,7 +115,7 @@ public class CertUtil {
     /**
      * 根据参数生成ECC公钥
      *
-     * @param curve ECC曲线名称（暂限三选一：secp256k1，sm2p256v1，prime256v1）
+     * @param curve ECC曲线名称
      * @param x     ECPoint:X
      * @param y     ECPoint:Y
      * @return publicKey 公钥
@@ -135,21 +138,43 @@ public class CertUtil {
      * @return subjectDN
      */
     public static Map<String, Object> getSubjectDN(Subject subject, License license) {
+        // 构建 X500Principal
         Map<String, Object> map = new HashMap<>();
-        String DNString = "CN=" + subject.getCommonName() +
-                ",O=" + subject.getOrganization() +
-                ",OU=" + subject.getOrganizationalUnit() +
-                ",C=" + subject.getCountryName() +
-                ",ST=" + subject.getProvinceName();
+        String commonName = subject.getCommonName();
+        String organization = subject.getOrganization();
+        String organizationalUnit = subject.getOrganizationalUnit();
+        String country = subject.getCountry();
+        String stateOrProvinceName = subject.getStateOrProvinceName();
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        if (StringUtils.isNotBlank(commonName)) {
+            builder.addRDN(BCStyle.CN, commonName);
+        }
+        if (StringUtils.isNotBlank(organization)) {
+            builder.addRDN(BCStyle.O, organization);
+        }
+        if (StringUtils.isNotBlank(organizationalUnit)) {
+            builder.addRDN(BCStyle.OU, organizationalUnit);
+        }
+        if (StringUtils.isNotBlank(country)) {
+            builder.addRDN(BCStyle.C, country);
+        }
+        if (StringUtils.isNotBlank(stateOrProvinceName)) {
+            builder.addRDN(BCStyle.ST, stateOrProvinceName);
+        }
+        map.put("DNString", new X500Principal(builder.build().toString()));
 
+        // 构建 subjectAlternativeNames
         List<GeneralName> subjectAlternativeNames = new ArrayList<>();
-        subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
-        if (license != null) {
+        if (subject.getEmail() != null) {
+            subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
+        }
+        if (license != null && license.getContentHash() != null) {
             String licenseUrl = "https://www.jokerxin.com/license/" + license.getContentHash();
             subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier, licenseUrl));
+        }
+        if(subjectAlternativeNames.size() > 0) {
             map.put("subjectAlternativeNames", new GeneralNames(subjectAlternativeNames.toArray(new GeneralName[0])));
         }
-        map.put("DNString", new X500Principal(DNString));
         return map;
     }
 
@@ -177,8 +202,10 @@ public class CertUtil {
                 publicKey)
                 .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature))
                 .addExtension(Extension.basicConstraints, false, new BasicConstraints(true))
-                .addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distributionPoints))
-                .addExtension(Extension.subjectAlternativeName, false, (GeneralNames) subjectDN.get("subjectAlternativeNames"));
+                .addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distributionPoints));
+        if(subjectDN.get("subjectAlternativeNames") != null) {
+            certGen.addExtension(Extension.subjectAlternativeName, false, (GeneralNames) subjectDN.get("subjectAlternativeNames"));
+        }
         // 签名构造器
         ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider("BC").build(privateKey);
         // 生成证书
