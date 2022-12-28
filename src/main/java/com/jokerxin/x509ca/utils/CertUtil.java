@@ -91,9 +91,9 @@ public class CertUtil {
                 .addExtension(Extension.basicConstraints, true, new BasicConstraints(true))
                 .addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distributionPoints));
         // 签名构造器
-        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider("BC").build(keyPair.getPrivate());
+        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider(PROVIDER).build(keyPair.getPrivate());
         // 生成证书
-        X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certGen.build(sigGen));
+        X509Certificate cert = new JcaX509CertificateConverter().setProvider(PROVIDER).getCertificate(certGen.build(sigGen));
         // 保存证书
         saveEncodedFile(ROOT_CRT_PATH, cert.getEncoded());
     }
@@ -207,9 +207,9 @@ public class CertUtil {
             certGen.addExtension(Extension.subjectAlternativeName, false, (GeneralNames) subjectDN.get("subjectAlternativeNames"));
         }
         // 签名构造器
-        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider("BC").build(privateKey);
+        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider(PROVIDER).build(privateKey);
         // 生成证书
-        return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certGen.build(sigGen));
+        return new JcaX509CertificateConverter().setProvider(PROVIDER).getCertificate(certGen.build(sigGen));
     }
 
     /**
@@ -244,9 +244,9 @@ public class CertUtil {
             crlGen.addCRLEntry(serial, new Date(), CRLReason.affiliationChanged);
         }
         // 签名构造器
-        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider("BC").build(privateKey);
+        ContentSigner sigGen = new JcaContentSignerBuilder(SIG_ALG).setProvider(PROVIDER).build(privateKey);
         // 生成证书吊销列表
-        return new JcaX509CRLConverter().setProvider("BC").getCRL(crlGen.build(sigGen));
+        return new JcaX509CRLConverter().setProvider(PROVIDER).getCRL(crlGen.build(sigGen));
     }
 
     /**
@@ -276,7 +276,7 @@ public class CertUtil {
         }
         fileInputStream.close();
         // 生成私钥
-        KeyFactory kf = KeyFactory.getInstance(algorithm, "BC");
+        KeyFactory kf = KeyFactory.getInstance(algorithm, PROVIDER);
         return kf.generatePrivate(new PKCS8EncodedKeySpec(bytes));
     }
 
