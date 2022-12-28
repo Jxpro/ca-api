@@ -13,7 +13,7 @@ public class UserKey {
     // 暂限三选一：secp256k1，sm2p256v1，prime256v1
     private String curveName;
     // 2048 或 4096
-    private Integer keySize;
+    private String keySize;
     private String param1;
     private String param2;
 }
