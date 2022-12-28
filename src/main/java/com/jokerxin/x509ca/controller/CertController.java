@@ -77,7 +77,7 @@ public class CertController {
 
     @PostMapping("/cert/revoke")
     public Result<Object> revokeCert(@RequestParam int requestId,
-                                          @RequestAttribute int userId) {
+                                     @RequestAttribute int userId) {
         certService.revokeById(requestId, userId);
         return Result.ok();
     }
