@@ -17,19 +17,19 @@ public interface CertService {
 
     List<Map<String, Object>> listByUserId(int userId, boolean uncompleted);
 
-    Map<String, Object> saveSubject(Subject subject, int userId);
-
-    Map<String, Object> saveLicense(MultipartFile file, int userId) throws IOException;
-
-    Map<String, Object> savePublicKey(UserKey userKey, int userId);
-
     List<Map<String, Object>> approveCert(int id, boolean passed);
-
-    Map<String, Object> revokeById(int requestId, int userId);
-
-    byte[] getLicense(String hash);
 
     byte[] getCertification(int id) throws Exception;
 
     byte[] getCRL() throws Exception;
+
+    byte[] getLicense(String hash);
+
+    void saveSubject(Subject subject, int userId);
+
+    void savePublicKey(UserKey userKey, int userId);
+
+    void saveLicense(MultipartFile file, int userId) throws IOException;
+
+    void revokeById(int requestId, int userId);
 }

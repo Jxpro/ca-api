@@ -82,98 +82,6 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public Map<String, Object> saveSubject(Subject subject, int userId) {
-        // 查询申请是否存在
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getUserId, userId);
-        wrapper.eq(Request::getState, "待完善");
-        Request request = requestMapper.selectOne(wrapper);
-        // 如果是第一次申请，则创建新的申请
-        if (request == null) {
-            request = new Request();
-            request.setUserId(userId);
-            request.setState("待完善");
-            requestMapper.insert(request);
-        }
-        // 如果已经有申请记录，则删除已有主体信息，插入新的主体信息
-        if (request.getSubjectId() != null) {
-            subjectMapper.deleteById(request.getSubjectId());
-        }
-        // 插入主体信息
-        subjectMapper.insert(subject);
-        // 更新申请记录
-        request.setSubjectId(subject.getId());
-        requestMapper.updateById(request);
-        // 返回申请记录
-        Map<String, Object> map = new HashMap<>();
-        map.put("request", request);
-        map.put("subject", subject);
-        return map;
-    }
-
-    @Override
-    public Map<String, Object> saveLicense(MultipartFile file, int userId) throws IOException {
-        // 查询申请信息（此处是第二步，所以一定存在）
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getUserId, userId);
-        wrapper.eq(Request::getState, "待完善");
-        Request request = requestMapper.selectOne(wrapper);
-        // 如果已有许可证，则删除已有许可证
-        if (request.getLicenseId() != null) {
-            licenseMapper.deleteById(request.getLicenseId());
-        }
-        // 插入许可证
-        License license = new License();
-        license.setContentHash(HashUtil.sha256(file.getBytes()));
-        license.setOriginName(file.getOriginalFilename());
-        licenseMapper.insert(license);
-        // 保存许可证文件
-        file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
-        // 更新申请记录
-        request.setLicenseId(license.getId());
-        requestMapper.updateById(request);
-        // 返回申请记录
-        Map<String, Object> map = new HashMap<>();
-        map.put("request", request);
-        map.put("license", license);
-        return map;
-    }
-
-    @Override
-    public Map<String, Object> savePublicKey(UserKey userKey, int userId) {
-        // 查询申请信息（此处是第三步，所以一定存在）
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getUserId, userId);
-        wrapper.eq(Request::getState, "待完善");
-        Request request = requestMapper.selectOne(wrapper);
-        // 插入公钥
-        userKeyMapper.insert(userKey);
-        // 更新申请记录
-        request.setKeyId(userKey.getId());
-        request.setState("待审核");
-        requestMapper.updateById(request);
-        // 返回申请记录
-        Map<String, Object> map = new HashMap<>();
-        map.put("request", request);
-        map.put("key", userKey);
-        return map;
-    }
-
-    @Override
-    public Map<String, Object> revokeById(int requestId, int userId) {
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getId, requestId);
-        wrapper.eq(Request::getUserId, userId);
-        Request request = requestMapper.selectOne(wrapper);
-        request.setState("已撤销");
-        request.setRevokeTime(new Date(System.currentTimeMillis()));
-        requestMapper.updateById(request);
-        Map<String, Object> map = new HashMap<>();
-        map.put("request", request);
-        return map;
-    }
-
-    @Override
     public List<Map<String, Object>> approveCert(int id, boolean passed) {
         // 查询申请信息
         Request request = requestMapper.selectById(id);
@@ -189,21 +97,6 @@ public class CertServiceImpl implements CertService {
         requestMapper.updateById(request);
         // 返回申请记录，方便重新渲染页面
         return this.listByState("待审核");
-    }
-
-    @Override
-    public byte[] getLicense(String hash) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
-            byte[] license = new byte[fileInputStream.available()];
-            if (fileInputStream.read(license) == -1) {
-                throw new Exception("文件读取失败");
-            }
-            fileInputStream.close();
-            return license;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -241,5 +134,94 @@ public class CertServiceImpl implements CertService {
         }
         X509CRL x509CRL = CertUtil.generateCRL(revokedSerialNumbers);
         return x509CRL.getEncoded();
+    }
+
+    @Override
+    public byte[] getLicense(String hash) {
+        try {
+            FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
+            byte[] license = new byte[fileInputStream.available()];
+            if (fileInputStream.read(license) == -1) {
+                throw new Exception("文件读取失败");
+            }
+            fileInputStream.close();
+            return license;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveSubject(Subject subject, int userId) {
+        // 查询申请是否存在
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 如果是第一次申请，则创建新的申请
+        if (request == null) {
+            request = new Request();
+            request.setUserId(userId);
+            request.setState("待完善");
+            requestMapper.insert(request);
+        }
+        // 如果已经有申请记录，则删除已有主体信息，插入新的主体信息
+        if (request.getSubjectId() != null) {
+            subjectMapper.deleteById(request.getSubjectId());
+        }
+        // 插入主体信息
+        subjectMapper.insert(subject);
+        // 更新申请记录
+        request.setSubjectId(subject.getId());
+        requestMapper.updateById(request);
+    }
+
+    @Override
+    public void saveLicense(MultipartFile file, int userId) throws IOException {
+        // 查询申请信息（此处是第二步，所以一定存在）
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 如果已有许可证，则删除已有许可证
+        if (request.getLicenseId() != null) {
+            licenseMapper.deleteById(request.getLicenseId());
+        }
+        // 插入许可证
+        License license = new License();
+        license.setContentHash(HashUtil.sha256(file.getBytes()));
+        license.setOriginName(file.getOriginalFilename());
+        licenseMapper.insert(license);
+        // 保存许可证文件
+        file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
+        // 更新申请记录
+        request.setLicenseId(license.getId());
+        requestMapper.updateById(request);
+    }
+
+    @Override
+    public void savePublicKey(UserKey userKey, int userId) {
+        // 查询申请信息（此处是第三步，所以一定存在）
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getUserId, userId);
+        wrapper.eq(Request::getState, "待完善");
+        Request request = requestMapper.selectOne(wrapper);
+        // 插入公钥
+        userKeyMapper.insert(userKey);
+        // 更新申请记录
+        request.setKeyId(userKey.getId());
+        request.setState("待审核");
+        requestMapper.updateById(request);
+    }
+
+    @Override
+    public void revokeById(int requestId, int userId) {
+        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Request::getId, requestId);
+        wrapper.eq(Request::getUserId, userId);
+        Request request = requestMapper.selectOne(wrapper);
+        request.setState("已撤销");
+        request.setRevokeTime(new Date(System.currentTimeMillis()));
+        requestMapper.updateById(request);
     }
 }
