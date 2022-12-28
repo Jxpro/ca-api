@@ -9,7 +9,7 @@ public class Result<T> implements Serializable {
     // 序列化版本号
     private static final long serialVersionUID = 1L;
     // 响应编码
-    private final int code;
+    private final Integer code;
     // 提示信息
     private final String msg;
     // 响应数据
@@ -42,10 +42,5 @@ public class Result<T> implements Serializable {
     // 权限不足
     public static <T> Result<T> forbidden(){
         return build(HttpEnum.FORBIDDEN,null);
-    }
-
-    // 系统内部错误
-    public static <T> Result<T> internal_server_error(){
-        return build(HttpEnum.INTERNAL_SERVER_ERROR,null);
     }
 }

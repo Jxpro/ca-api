@@ -29,8 +29,8 @@ public enum HttpEnum {
     private final Integer code;
     private final String msg;
 
-    HttpEnum(int code, String msg) {
-        this.msg = msg;
+    HttpEnum(Integer code, String msg) {
         this.code = code;
+        this.msg = msg;
     }
 }
