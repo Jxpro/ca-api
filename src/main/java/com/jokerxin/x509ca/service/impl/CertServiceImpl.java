@@ -137,18 +137,14 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public byte[] getLicense(String hash) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
-            byte[] license = new byte[fileInputStream.available()];
-            if (fileInputStream.read(license) == -1) {
-                throw new Exception("文件读取失败");
-            }
-            fileInputStream.close();
-            return license;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public byte[] getLicense(String hash) throws Exception {
+        FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
+        byte[] license = new byte[fileInputStream.available()];
+        if (fileInputStream.read(license) == -1) {
+            throw new Exception("文件读取失败");
         }
+        fileInputStream.close();
+        return license;
     }
 
     @Override

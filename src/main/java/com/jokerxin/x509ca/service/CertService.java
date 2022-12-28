@@ -1,9 +1,9 @@
 package com.jokerxin.x509ca.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.jokerxin.x509ca.entity.UserKey;
 import com.jokerxin.x509ca.entity.Request;
 import com.jokerxin.x509ca.entity.Subject;
+import com.jokerxin.x509ca.entity.UserKey;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ public interface CertService {
 
     byte[] getCRL() throws Exception;
 
-    byte[] getLicense(String hash);
+    byte[] getLicense(String hash) throws Exception;
 
     void saveSubject(Subject subject, int userId);
 
