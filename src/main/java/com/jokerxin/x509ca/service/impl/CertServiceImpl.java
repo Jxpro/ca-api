@@ -173,39 +173,46 @@ public class CertServiceImpl implements CertService {
     }
 
     @Override
-    public void saveLicense(MultipartFile file, int userId) throws IOException {
+    public void savePublicKey(UserKey userKey, int userId) {
         // 查询申请信息（此处是第二步，所以一定存在）
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
         wrapper.eq(Request::getState, "待完善");
         Request request = requestMapper.selectOne(wrapper);
-        // 如果已有许可证，则删除已有许可证
-        if (request.getLicenseId() != null) {
-            licenseMapper.deleteById(request.getLicenseId());
+        // 如果已经有申请记录，则删除已有密钥信息，插入新的密钥信息
+        if (request.getKeyId() != null) {
+            userKeyMapper.deleteById(request.getKeyId());
         }
-        // 插入许可证
-        License license = new License();
-        license.setContentHash(HashUtil.sha256(file.getBytes()));
-        license.setOriginName(file.getOriginalFilename());
-        licenseMapper.insert(license);
-        // 保存许可证文件
-        file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
+        // 插入公钥
+        userKeyMapper.insert(userKey);
         // 更新申请记录
-        request.setLicenseId(license.getId());
+        request.setKeyId(userKey.getId());
         requestMapper.updateById(request);
     }
 
     @Override
-    public void savePublicKey(UserKey userKey, int userId) {
+    public void saveLicense(MultipartFile file, int userId) throws IOException {
         // 查询申请信息（此处是第三步，所以一定存在）
         LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Request::getUserId, userId);
         wrapper.eq(Request::getState, "待完善");
         Request request = requestMapper.selectOne(wrapper);
-        // 插入公钥
-        userKeyMapper.insert(userKey);
-        // 更新申请记录
-        request.setKeyId(userKey.getId());
+        // 如果上传了许可证，则保存许可证
+        if (file != null) {
+            // 如果已有许可证，则删除已有许可证
+            if (request.getLicenseId() != null) {
+                licenseMapper.deleteById(request.getLicenseId());
+            }
+            // 插入许可证
+            License license = new License();
+            license.setContentHash(HashUtil.sha256(file.getBytes()));
+            license.setOriginName(file.getOriginalFilename());
+            licenseMapper.insert(license);
+            // 保存许可证文件
+            file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
+            // 更新申请记录
+            request.setLicenseId(license.getId());
+        }
         request.setState("待审核");
         requestMapper.updateById(request);
     }
