@@ -33,7 +33,7 @@ public class UserController {
             userService.saveUser(user);
             map.put("name", user.getNickname());
             map.put("role", user.getRole());
-            response.setHeader("Authorization", JWTUtil.createToken(user.getId(), user.getUsername()));
+            response.setHeader("Authorization", JWTUtil.createToken(user.getId(), user.getRole()));
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
             return Result.ok(map);
         }
@@ -51,7 +51,7 @@ public class UserController {
             Map<String, Object> map = new HashMap<>();
             map.put("name", username);
             map.put("role", user.getRole());
-            response.setHeader("Authorization", JWTUtil.createToken(user.getId(), username));
+            response.setHeader("Authorization", JWTUtil.createToken(user.getId(), user.getRole()));
             response.setHeader("Access-Control-Expose-Headers", "Authorization");
             return Result.ok(map);
         }
