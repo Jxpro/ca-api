@@ -25,4 +25,4 @@
 
 ## 联系方式
 
-如果有任何问题，欢迎到 [github issue](https://github.com/Jxpro/damai-tickets/issues) 进行讨论，或发送电子邮件到 [jxpro@qq.com](mailto:jxpro@qq.com) 来联系我
+如果有任何问题，欢迎到 [github issue](https://github.com/Jxpro/ca-api/issues) 进行讨论，或发送电子邮件到 [jxpro@qq.com](mailto:jxpro@qq.com) 来联系我
