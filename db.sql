@@ -2,28 +2,6 @@
 CREATE DATABASE IF NOT EXISTS x509ca CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE x509ca;
 
--- 创建request表
-CREATE TABLE `request` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` INT UNSIGNED NOT NULL COMMENT '申请证书的用户ID',
-    `subject_id` INT UNSIGNED DEFAULT NULL COMMENT '主体ID',
-    `license_id` INT UNSIGNED DEFAULT NULL COMMENT '许可证ID',
-    `key_id` INT UNSIGNED DEFAULT NULL COMMENT '公钥ID',
-    `serial_number` BIGINT UNSIGNED DEFAULT NULL COMMENT '证书序列号',
-    `not_before` DATETIME DEFAULT NULL COMMENT '证书颁发时间',
-    `not_after` DATETIME DEFAULT NULL COMMENT '证书过期时间',
-    `revoke_time` DATETIME DEFAULT NULL COMMENT '证书撤销时间',
-    `state` ENUM('待完善', '待审核', '未通过', '已通过', '已撤销') NOT NULL COMMENT '证书状态',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uniq_subject_id` (`subject_id`),
-    UNIQUE KEY `uniq_license_id` (`license_id`),
-    UNIQUE KEY `uniq_key_id` (`key_id`),
-    CONSTRAINT `fk_request_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_request_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`) ON DELETE SET NULL,
-    CONSTRAINT `fk_request_license` FOREIGN KEY (`license_id`) REFERENCES `license` (`id`) ON DELETE SET NULL,
-    CONSTRAINT `fk_request_key` FOREIGN KEY (`key_id`) REFERENCES `user_key` (`id`) ON DELETE SET NULL
-) ENGINE=INNODB AUTO_INCREMENT=32 COMMENT='申请证书表';
-
 -- 创建user表
 CREATE TABLE `user` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户id，自增',
@@ -66,3 +44,25 @@ CREATE TABLE `license` (
     `content_hash` CHAR(64) NOT NULL COMMENT '内容哈希，作为保存文件的名称',
     PRIMARY KEY (`id`)
 ) ENGINE=INNODB AUTO_INCREMENT=32 COMMENT='许可证表';
+
+-- 创建request表
+CREATE TABLE `request` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` INT UNSIGNED NOT NULL COMMENT '申请证书的用户ID',
+    `subject_id` INT UNSIGNED DEFAULT NULL COMMENT '主体ID',
+    `license_id` INT UNSIGNED DEFAULT NULL COMMENT '许可证ID',
+    `key_id` INT UNSIGNED DEFAULT NULL COMMENT '公钥ID',
+    `serial_number` BIGINT UNSIGNED DEFAULT NULL COMMENT '证书序列号',
+    `not_before` DATETIME DEFAULT NULL COMMENT '证书颁发时间',
+    `not_after` DATETIME DEFAULT NULL COMMENT '证书过期时间',
+    `revoke_time` DATETIME DEFAULT NULL COMMENT '证书撤销时间',
+    `state` ENUM('待完善', '待审核', '未通过', '已通过', '已撤销') NOT NULL COMMENT '证书状态',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uniq_subject_id` (`subject_id`),
+    UNIQUE KEY `uniq_license_id` (`license_id`),
+    UNIQUE KEY `uniq_key_id` (`key_id`),
+    CONSTRAINT `fk_request_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_request_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `fk_request_license` FOREIGN KEY (`license_id`) REFERENCES `license` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `fk_request_key` FOREIGN KEY (`key_id`) REFERENCES `user_key` (`id`) ON DELETE SET NULL
+) ENGINE=INNODB AUTO_INCREMENT=32 COMMENT='申请证书表';
