@@ -1,7 +1,6 @@
 package com.jokerxin.x509ca.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.jokerxin.x509ca.entity.License;
 import com.jokerxin.x509ca.entity.Request;
 import com.jokerxin.x509ca.entity.Subject;
 import com.jokerxin.x509ca.entity.UserKey;
@@ -28,14 +27,12 @@ import java.util.*;
 public class CertServiceImpl implements CertService {
     final RequestMapper requestMapper;
     final SubjectMapper subjectMapper;
-    final LicenseMapper licenseMapper;
     final UserKeyMapper userKeyMapper;
     final UserMapper userMapper;
 
-    public CertServiceImpl(RequestMapper requestMapper, SubjectMapper subjectMapper, LicenseMapper licenseMapper, UserKeyMapper userKeyMapper, UserMapper userMapper) {
+    public CertServiceImpl(RequestMapper requestMapper, SubjectMapper subjectMapper, UserKeyMapper userKeyMapper, UserMapper userMapper) {
         this.requestMapper = requestMapper;
         this.subjectMapper = subjectMapper;
-        this.licenseMapper = licenseMapper;
         this.userKeyMapper = userKeyMapper;
         this.userMapper = userMapper;
     }
@@ -57,7 +54,6 @@ public class CertServiceImpl implements CertService {
             Map<String, Object> map = new HashMap<>();
             map.put("request", request);
             map.put("subject", subjectMapper.selectById(request.getSubjectId()));
-            map.put("license", licenseMapper.selectById(request.getLicenseId()));
             map.put("key", userKeyMapper.selectById(request.getKeyId()));
             list.add(map);
         });
@@ -104,17 +100,13 @@ public class CertServiceImpl implements CertService {
         Request request = requestMapper.selectById(id);
         UserKey userKey = userKeyMapper.selectById(request.getKeyId());
         Subject subject = subjectMapper.selectById(request.getSubjectId());
-        License license = null;
-        if (request.getLicenseId() != null) {
-            license = licenseMapper.selectById(request.getLicenseId());
-        }
         PublicKey publicKey;
         if (userKey.getAlgorithm().equals("RSA-2048")) {
             publicKey = CertUtil.customRSAPublicKey(userKey.getParam1(), userKey.getParam2());
         } else {
             publicKey = CertUtil.customECPublicKey("prime256v1", userKey.getParam1(), userKey.getParam2());
         }
-        Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject, license);
+        Map<String, Object> subjectDN = CertUtil.getSubjectDN(subject);
         X509Certificate x509Certificate = CertUtil.generateUserCert(subjectDN,
                 BigInteger.valueOf(request.getSerialNumber()),
                 request.getNotBefore(),
@@ -134,17 +126,6 @@ public class CertServiceImpl implements CertService {
         }
         X509CRL x509CRL = CertUtil.generateCRL(revokedSerialNumbers);
         return x509CRL.getEncoded();
-    }
-
-    @Override
-    public byte[] getLicense(String hash) throws Exception {
-        FileInputStream fileInputStream = new FileInputStream("license/" + hash + ".pdf");
-        byte[] license = new byte[fileInputStream.available()];
-        if (fileInputStream.read(license) == -1) {
-            throw new Exception("文件读取失败");
-        }
-        fileInputStream.close();
-        return license;
     }
 
     @Override
@@ -187,32 +168,6 @@ public class CertServiceImpl implements CertService {
         userKeyMapper.insert(userKey);
         // 更新申请记录
         request.setKeyId(userKey.getId());
-        requestMapper.updateById(request);
-    }
-
-    @Override
-    public void saveLicense(MultipartFile file, int userId) throws IOException {
-        // 查询申请信息（此处是第三步，所以一定存在）
-        LambdaQueryWrapper<Request> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Request::getUserId, userId);
-        wrapper.eq(Request::getState, "待完善");
-        Request request = requestMapper.selectOne(wrapper);
-        // 如果上传了许可证，则保存许可证
-        if (file != null) {
-            // 如果已有许可证，则删除已有许可证
-            if (request.getLicenseId() != null) {
-                licenseMapper.deleteById(request.getLicenseId());
-            }
-            // 插入许可证
-            License license = new License();
-            license.setContentHash(HashUtil.sha256(file.getBytes()));
-            license.setOriginName(file.getOriginalFilename());
-            licenseMapper.insert(license);
-            // 保存许可证文件
-            file.transferTo(new File("license/" + license.getContentHash() + ".pdf"));
-            // 更新申请记录
-            request.setLicenseId(license.getId());
-        }
         request.setState("待审核");
         requestMapper.updateById(request);
     }

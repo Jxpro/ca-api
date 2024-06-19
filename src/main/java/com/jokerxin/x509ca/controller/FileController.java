@@ -56,17 +56,4 @@ public class FileController {
             throw new RuntimeException(e);
         }
     }
-
-    @PassLogin
-    @GetMapping("/file/license/{hash}")
-    public void license(@PathVariable String hash,
-                        HttpServletResponse response) {
-        try {
-            byte[] file = certService.getLicense(hash);
-            response.setContentLength(file.length);
-            response.getOutputStream().write(file);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -23,13 +23,9 @@ public interface CertService {
 
     byte[] getCRL() throws Exception;
 
-    byte[] getLicense(String hash) throws Exception;
-
     void saveSubject(Subject subject, int userId);
 
     void savePublicKey(UserKey userKey, int userId);
-
-    void saveLicense(MultipartFile file, int userId) throws IOException;
 
     void revokeById(int requestId, int userId);
 }

@@ -60,12 +60,6 @@ public class CertController {
         return Result.created();
     }
 
-    @PostMapping("/cert/apply/license")
-    public Result<Object> applyLicense(MultipartFile license, @RequestAttribute int userId) throws IOException {
-        certService.saveLicense(license, userId);
-        return Result.created();
-    }
-
     @PostMapping("/cert/approve")
     public Result<Object> approveCert(@RequestParam int id,
                                       @RequestParam boolean passed,

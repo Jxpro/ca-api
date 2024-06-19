@@ -1,7 +1,6 @@
 package com.jokerxin.x509ca.utils;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.jokerxin.x509ca.entity.License;
 import com.jokerxin.x509ca.entity.Subject;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -137,7 +136,7 @@ public class CertUtil {
      * @param subject subject实体
      * @return subjectDN
      */
-    public static Map<String, Object> getSubjectDN(Subject subject, License license) {
+    public static Map<String, Object> getSubjectDN(Subject subject) {
         // 构建 X500Principal
         Map<String, Object> map = new HashMap<>();
         String commonName = subject.getCommonName();
@@ -167,10 +166,6 @@ public class CertUtil {
         List<GeneralName> subjectAlternativeNames = new ArrayList<>();
         if (subject.getEmail() != null) {
             subjectAlternativeNames.add(new GeneralName(GeneralName.rfc822Name, subject.getEmail()));
-        }
-        if (license != null && license.getContentHash() != null) {
-            String licenseUrl = "https://www.jokerxin.com/license/" + license.getContentHash();
-            subjectAlternativeNames.add(new GeneralName(GeneralName.uniformResourceIdentifier, licenseUrl));
         }
         if(subjectAlternativeNames.size() > 0) {
             map.put("subjectAlternativeNames", new GeneralNames(subjectAlternativeNames.toArray(new GeneralName[0])));

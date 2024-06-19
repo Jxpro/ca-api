@@ -12,7 +12,6 @@ public class Request {
     private Integer id;
     private Integer userId;
     private Integer subjectId;
-    private Integer licenseId;
     private Integer keyId;
     private Long serialNumber;
     private Date notBefore;
