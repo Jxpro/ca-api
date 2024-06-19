@@ -29,9 +29,7 @@ CREATE TABLE `subject` (
 -- 创建user_key表
 CREATE TABLE `user_key` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `algorithm` ENUM('RSA', 'EC') NOT NULL COMMENT '签名算法：RSA或EC',
-    `curve_name` ENUM('secp256k1', 'sm2p256v1', 'prime256v1') DEFAULT NULL COMMENT '曲线名称，暂限三选一：secp256k1，sm2p256v1，prime256v1',
-    `key_size` ENUM('2048', '4096') DEFAULT NULL COMMENT 'RSA公钥长度，2048或4096',
+    `algorithm` ENUM('RSA-2048', 'EC-prime256v1') NOT NULL COMMENT '签名算法：RSA或EC',
     `param1` VARCHAR(1024) DEFAULT NULL COMMENT 'RSA公钥n或ECC Point x',
     `param2` VARCHAR(1024) DEFAULT NULL COMMENT 'RSA公钥e或ECC Point y',
     PRIMARY KEY (`id`)
