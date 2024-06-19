@@ -29,7 +29,7 @@ public class UserController {
             return Result.unauthorized();
         } else {
             Map<String, Object> map = new HashMap<>();
-            user.setPassword(HashUtil.sha256(user.getPassword().getBytes()));
+            user.setPassword(user.getPassword());
             userService.saveUser(user);
             map.put("name", user.getNickname());
             map.put("role", user.getRole());
@@ -45,7 +45,7 @@ public class UserController {
                                 @RequestParam String password,
                                 HttpServletResponse response) {
         User user = userService.getByUsername(username);
-        if (!Objects.equals(HashUtil.sha256(password.getBytes()), user.getPassword())) {
+        if (!Objects.equals(password, user.getPassword())) {
             return Result.unauthorized();
         } else {
             Map<String, Object> map = new HashMap<>();
